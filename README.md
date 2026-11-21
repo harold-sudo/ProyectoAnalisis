@@ -37,6 +37,15 @@ Debe determinar si Pac-Man puede llegar desde su posicion inicial a toda la comi
 
 El resultado permite distinguir niveles jugables de niveles rotos. Si alguna casilla con comida es inaccesible por paredes o por la configuracion de regiones del mapa, la funcion debe indicar que el nivel no es valido.
 
+La implementacion propuesta se basa en **BFS (Busqueda en Anchura)** desde la posicion de Pac-Man. La cola permite procesar las casillas por capas de distancia y el registro de visitados evita procesar una misma casilla varias veces o quedar atrapado en recorridos ciclicos.
+
+Cuando termina el recorrido, se revisa toda la grilla; si alguna casilla que contiene comida no fue visitada, significa que pertenece a una componente inaccesible y el mapa no es valido.
+
+**Complejidad:**
+
+- **Tiempo:** `O(F * C)`, siendo `F` y `C` la cantidad de filas y columnas. Cada casilla se agrega y procesa una vez, y se hacen cuatro intentos de movimiento por casilla. La revision final tambien recorre las `F * C` casillas.
+- **Espacio:** `O(F * C)`. Se almacenan la matriz de visitados y, en el peor caso, una cola con casillas de la grilla.
+
 ### `pasoPerseguir`
 
 Dada la posicion actual de un fantasma y la posicion de Pac-Man, debe elegir una casilla vecina que permita atrapar a Pac-Man lo antes posible.

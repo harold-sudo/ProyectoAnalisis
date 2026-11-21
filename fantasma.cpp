@@ -2,13 +2,16 @@
 //  fantasma.cpp  -  EL UNICO ARCHIVO QUE MODIFICAN
 //
 //  Integrantes:
-//    1.
-//    2.
-//    3.
+//    1. Harold Sejas Lazarte
+//    2. Hassan Lopez Olivares
+//    3. Eduardo Huayna Rojas
 //
 //  Compilen y ejecuten ESTE archivo para jugar.
 // =====================================================================
 #include "juego.h"
+
+#include <queue>
+#include <vector>
 
 // Los 4 movimientos: arriba, izquierda, abajo, derecha
 int DF[4] = {-1, 0, 1, 0};
@@ -22,7 +25,49 @@ int DC[4] = {0, -1, 0, 1};
 
 // true si Pac-Man puede llegar a toda la comida ('.' y 'o').
 bool mapaValido(Mapa& m, Pos pacman) {
-    // TODO
+    vector<vector<bool> > visitado(m.filas, vector<bool>(m.cols, false));
+
+    queue<Pos> cola;
+
+    if (m.esPared(pacman)) {
+        return false;
+    }
+
+    visitado[pacman.f][pacman.c] = true;
+    cola.push(pacman);
+
+    int df[4] = {-1, 1, 0, 0};
+    int dc[4] = {0, 0, -1, 1};
+
+    while (!cola.empty()) {
+        Pos actual = cola.front();
+        cola.pop();
+
+        for (int i = 0; i < 4; i++) {
+            Pos sig;
+            sig.f = actual.f + df[i];
+            sig.c = actual.c + dc[i];
+
+            // Si esta fuera del mapa, m.esPared(sig) devuelve true porque m.en(sig) retorna '#'
+            if (!m.esPared(sig) && !visitado[sig.f][sig.c]) {
+                visitado[sig.f][sig.c] = true;
+                cola.push(sig);
+            }
+        }
+    }
+
+    for (int f = 0; f < m.filas; f++) {
+        for (int c = 0; c < m.cols; c++) {
+            Pos p;
+            p.f = f;
+            p.c = c;
+
+            if (m.esComida(p) && !visitado[f][c]) {
+                return false;
+            }
+        }
+    }
+
     return true;
 }
 
