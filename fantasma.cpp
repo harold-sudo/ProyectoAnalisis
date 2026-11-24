@@ -143,13 +143,13 @@ Pos pasoPerseguir(Mapa& m, Pos fantasma, Pos pacman) {
 }
 
 
-// La diferencia con BFS está en lo que queremos minimizar.
+// La diferencia con BFS estï¿½ en lo que queremos minimizar.
 // En el ejemplo del PDF, cruzar por abajo toma 8 pasos y 14 turnos.
 // Dar la vuelta por arriba toma 12 pasos y 12 turnos.
 // Dijkstra elige subir porque la ruta por arriba tarda menos.
 //
 // Tiempo O(F*C*log(F*C)). Hay hasta cuatro conexiones por casilla y cada
-// inserción o extracción de la cola de prioridad cuesta tiempo logarítmico.
+// inserciï¿½n o extracciï¿½n de la cola de prioridad cuesta tiempo logarï¿½tmico.
 // Espacio O(F*C) por dist, anterior y la cola.
 
 // ---------------------------------------------------------------------
@@ -160,9 +160,63 @@ Pos pasoPerseguir(Mapa& m, Pos fantasma, Pos pacman) {
 // lo mas lejos posible de Pac-Man. Si no le conviene moverse, devuelve
 // 'fantasma' (se queda).
 Pos pasoEscapar(Mapa& m, Pos fantasma, Pos pacman) {
-    // TODO
-    return fantasma;
+
+    if (m.esPared(fantasma) || m.esPared(pacman) || fantasma == pacman) {
+        return fantasma;
+    }
+
+    vector<vector<int> > dist = matriz(m.filas, m.cols, -1);
+    queue<Pos> cola;
+
+    dist[pacman.f][pacman.c] = 0;
+    cola.push(pacman);
+
+    while (!cola.empty()) {
+        Pos actual = cola.front();
+        cola.pop();
+
+        for (int i = 0; i < 4; i++) {
+            Pos sig = {actual.f + DF[i], actual.c + DC[i]};
+
+            if (m.esPared(sig) || dist[sig.f][sig.c] != -1) {
+                continue;
+            }
+
+            dist[sig.f][sig.c] = dist[actual.f][actual.c] + 1;
+            cola.push(sig);
+        }
+    }
+
+    int mayorDistancia = dist[fantasma.f][fantasma.c];
+    Pos mejor = fantasma;
+
+    for (int i = 0; i < 4; i++) {
+        Pos sig = {fantasma.f + DF[i], fantasma.c + DC[i]};
+
+        if (m.esPared(sig)) {
+            continue;
+        }
+
+        int nuevaDistancia = dist[sig.f][sig.c];
+        if (nuevaDistancia == -1) {
+            continue;
+        }
+
+        if (nuevaDistancia > mayorDistancia) {
+            mayorDistancia = nuevaDistancia;
+            mejor = sig;
+        }
+    }
+
+    return mejor;
 }
+
+// BFS calcula la distancia real en pasos considerando muros y rodeos,
+// a diferencia de usar distancia Manhattan que ignora paredes.
+//
+// Tiempo: O(F * C), donde F y C son filas y columnas (en una grilla n x n,O(n^2)).
+// Cada casilla se encola y procesa como maximo una vez, y se revisan hasta 4 vecinas por casilla.
+// Espacio: O(F * C) por la matriz dist y la cola en el peor caso.
 
 // INICIO
 int main() {
