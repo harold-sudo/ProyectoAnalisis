@@ -77,10 +77,80 @@ bool mapaValido(Mapa& m, Pos pacman) {
 
 // La casilla vecina a la que se mueve el fantasma para atrapar a Pac-Man
 // lo antes posible. Si no puede llegar, devuelve 'fantasma' (se queda).
+
 Pos pasoPerseguir(Mapa& m, Pos fantasma, Pos pacman) {
-    // TODO
-    return fantasma;
+    if (fantasma == pacman) {
+        return fantasma;
+    }
+
+    vector<vector<int> > dist = matriz(m.filas, m.cols, -1);
+    vector<vector<bool> > visitado(m.filas, vector<bool>(m.cols, false));
+    vector<vector<Pos> > anterior(m.filas, vector<Pos>(m.cols));
+
+    dist[fantasma.f][fantasma.c] = 0;
+    for (int i = 0; i < m.filas * m.cols; i++) {
+
+        Pos actual = { -1, -1 };
+
+        for (int f = 0; f < m.filas; f++) {
+            for (int c = 0; c < m.cols; c++) {
+                if (dist[f][c] != -1 && !visitado[f][c]) {
+
+                    if (actual.f == -1 || dist[f][c] < dist[actual.f][actual.c]) {
+
+                        actual = { f, c };
+                    }
+                }
+            }
+        }
+
+        if (actual.f == -1) {
+            break;
+        }
+        visitado[actual.f][actual.c] = true;
+
+        if (actual == pacman) {
+            break;
+        }
+
+        for (int j = 0; j < 4; j++) {
+
+            Pos sig;
+            sig.f = actual.f + DF[j];
+            sig.c = actual.c + DC[j];
+
+            if (!m.esPared(sig) && !visitado[sig.f][sig.c]) {
+                int nuevo = dist[actual.f][actual.c] + m.costo(sig);
+
+                if (dist[sig.f][sig.c] == -1 || nuevo < dist[sig.f][sig.c]) {
+
+                    dist[sig.f][sig.c] = nuevo;
+                    anterior[sig.f][sig.c] = actual;
+                }
+            }
+        }
+    }
+
+    if (dist[pacman.f][pacman.c] == -1) {
+        return fantasma;
+    }
+    Pos paso = pacman;
+
+    while (anterior[paso.f][paso.c] != fantasma) {
+        paso = anterior[paso.f][paso.c];
+    }
+    return paso;
 }
+
+
+// La diferencia con BFS está en lo que queremos minimizar.
+// En el ejemplo del PDF, cruzar por abajo toma 8 pasos y 14 turnos.
+// Dar la vuelta por arriba toma 12 pasos y 12 turnos.
+// Dijkstra elige subir porque la ruta por arriba tarda menos.
+//
+// Tiempo O(F*C*log(F*C)). Hay hasta cuatro conexiones por casilla y cada
+// inserción o extracción de la cola de prioridad cuesta tiempo logarítmico.
+// Espacio O(F*C) por dist, anterior y la cola.
 
 // ---------------------------------------------------------------------
 //  PARTE 3: escapar de Pac-Man
